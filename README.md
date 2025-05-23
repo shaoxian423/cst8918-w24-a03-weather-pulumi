@@ -113,7 +113,7 @@ To begin, load the configuration variables for the given environment (stack)
 // Import the configuration settings for the current stack.
 const config = new pulumi.Config()
 const appPath = config.get('appPath') || '../'
-const prefixName = config.get('prefixName') || 'cst8918-a03-student'
+const prefixName = config.get('prefixName') || 'cst8918a03ren00055'
 const imageName = prefixName
 const imageTag = config.get('imageTag') || 'latest'
 // Azure container instances (ACI) service does not yet support port mapping
