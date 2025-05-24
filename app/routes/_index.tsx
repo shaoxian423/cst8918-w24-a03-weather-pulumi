@@ -37,6 +37,7 @@ export async function loader() {
 
 export default function CurrentConditions() {
   const { currentConditions } = useLoaderData<typeof loader>()
+  console.log('currentConditions', currentConditions)
   const weather = currentConditions.weather?.[0] // use ?. Avoid runtime crashes
 
   return (
@@ -64,7 +65,7 @@ export default function CurrentConditions() {
             alignItems: 'center',
           }}
         >
-          <img src={getWeatherIconUrl(weather.icon)} alt="" />
+          <img src={getWeatherIconUrl(weather?.icon)} alt="" />
           <div style={{ fontSize: '2rem' }}>
             {currentConditions.main.temp.toFixed(1)}°C
           </div>

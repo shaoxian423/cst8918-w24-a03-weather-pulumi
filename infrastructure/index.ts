@@ -1,10 +1,10 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as resources from '@pulumi/azure-native/resources'
+import * as redis from '@pulumi/azure-native/redis'
 import * as containerregistry from '@pulumi/azure-native/containerregistry'
 // Other imports at the top of the module
 import * as docker from '@pulumi/docker'
 import * as containerinstance from '@pulumi/azure-native/containerinstance'
-
 
 // Import the configuration settings for the current stack.
 const config = new pulumi.Config()
@@ -21,6 +21,40 @@ const memory = config.getNumber('memory') || 2
 
 // Create a resource group.
 const resourceGroup = new resources.ResourceGroup(`${prefixName}-rg`)
+
+// Create a managed Redis service
+const redisCache = new redis.Redis(`${prefixName}-redis`, {
+  name: `${prefixName}-weather-cache`,
+  location: 'westus3',
+  resourceGroupName: resourceGroup.name,
+  enableNonSslPort: true,
+  redisVersion: 'Latest',
+  minimumTlsVersion: '1.2',
+  redisConfiguration: {
+    maxmemoryPolicy: 'allkeys-lru'
+  },
+  sku: {
+    name: 'Basic',
+    family: 'C',
+    capacity: 0
+  }
+})
+
+// Extract the auth creds from the deployed Redis service
+const redisAccessKey = redis
+  .listRedisKeysOutput({ name: redisCache.name, resourceGroupName: resourceGroup.name })
+  .apply(keys => keys.primaryKey)
+
+// Construct the Redis connection string to be passed as an environment variable in the app container
+const redisConnectionString = pulumi.interpolate`rediss://:${redisAccessKey}@${redisCache.hostName}:${redisCache.sslPort}`
+
+environmentVariables: [
+  // existing vars ...
+  {
+    name: 'REDIS_URL',
+    value: redisConnectionString
+  }
+]
 
 // Create the container registry.
 const registry = new containerregistry.Registry(`${prefixName}ACR`, {
@@ -106,7 +140,7 @@ const containerGroup = new containerinstance.ContainerGroup(
     ],
     ipAddress: {
       type: containerinstance.ContainerGroupIpAddressType.Public,
-      dnsNameLabel: `${imageName}`,
+      dnsNameLabel: `${imageName}-h03`,
       ports: [
         {
           port: publicPort,
