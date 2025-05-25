@@ -48,13 +48,6 @@ const redisAccessKey = redis
 // Construct the Redis connection string to be passed as an environment variable in the app container
 const redisConnectionString = pulumi.interpolate`rediss://:${redisAccessKey}@${redisCache.hostName}:${redisCache.sslPort}`
 
-environmentVariables: [
-  // existing vars ...
-  {
-    name: 'REDIS_URL',
-    value: redisConnectionString
-  }
-]
 
 // Create the container registry.
 const registry = new containerregistry.Registry(`${prefixName}ACR`, {
@@ -128,6 +121,10 @@ const containerGroup = new containerinstance.ContainerGroup(
           {
             name: 'WEATHER_API_KEY',
             value: config.requireSecret('weatherApiKey')
+          },
+          {
+            name: 'REDIS_URL',
+            value: redisConnectionString
           }
         ],
         resources: {
