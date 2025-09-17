@@ -1,7 +1,4 @@
-CST8918 - DevOps: Infrastructure as Code  
-Prof: Robert McKenney
-
-# LAB-A03 Pulumi Weather App
+# Pulumi Weather App
 
 In this hands-on lab activity you will revisit the weather app from [LAB-A01](https://github.com/rlmckenney/cst8918-w24-a01-weather). This time you have been asked to make the solution more robust and further reduce redundant hits on the OpenWeather API. To accomplish this, the team has decided to replace the in-app memory cache with a Redis cache that will be shared by all container instances.
 
